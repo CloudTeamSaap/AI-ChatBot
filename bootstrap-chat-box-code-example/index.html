@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="custom.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>    
+    <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://sdk.amazonaws.com/js/aws-sdk-2.205.0.min.js"></script>
+	<script src="amazon-cognito-identity.min.js"></script> 
+	<link rel="stylesheet" type="text/css" href="index.css">
+	<script src="jquery-1.11.0.js"></script>
+<script>
+$(document).ready(function(){
+$(window).load(function(){
+	
+	$("#logo").fadeIn(750, function(){
+		$("#logo").animate({top:'100px'}, 500, function (){
+			$('#ind').fadeIn(500);
+			$('#cod').fadeIn(500);
+			$('#cat').fadeIn(500, function(){
+				$('#logo').animate({left : '100px'}, 400);
+				$('#ind').animate({left : '100px'}, 500);
+				$('#cod').animate({left : '100px'}, 600);
+				$('#cat').animate({left : '100px'}, 700, function(){
+					$('#mat').fadeIn(500);
+					$('#line').fadeIn(500);
+				});
+
+			});
+		});
+	});
+});
+});
+</script>
+
+</head>
+<body>
+<div class="main-section">
+    <div class="row border-chat">
+        <div class="col-md-12 col-sm-12 col-xs-12 first-section">
+            <div class="row">
+                <div class="col-md-8 col-sm-6 col-xs-6 left-first-section">
+                    <p>Chat</p>
+                </div>
+                <div class="col-md-4 col-sm-6 col-xs-6 right-first-section">
+                    <a href="#"><i class="fa fa-minus" aria-hidden="true"></i></a>
+                    <a href="#"><i class="fa fa-clone" aria-hidden="true"></i></a>
+                    <a href="#"><i class="fa fa-times" aria-hidden="true"></i></a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row border-chat">
+        <div class="col-md-12 col-sm-12 col-xs-12 second-section">
+            <div class="chat-section">
+                <ul id = "chatlist">
+                    
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="row border-chat">
+        <div class="col-md-12 col-sm-12 col-xs-12 third-section">
+            <div class="text-bar">
+                <input type="text" placeholder="Write messege" id = "usermessage"><a href="#"><i class="fa fa-arrow-right" aria-hidden="true" onclick = "updateList()"></i></a>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script type="text/javascript">    
+    
+	var poolData = { UserPoolId : 'us-east-1_y4X6MjGQu',
+        ClientId : '483kdfgt8jt79kjk0nqlgkv0rl'
+    };
+	var userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);
+    var userData = {
+		Username : 'username',
+        Pool : userPool
+    };
+    var cognitoUser = new AmazonCognitoIdentity.CognitoUser(userData);
+	console.log("cognitoUSerr" + cognitoUser);
+		var string = 'Sonit';
+        var appId = '3k44slsg9r7b4loblpvo5th7rt';
+        var roleArn = 'arn:aws:iam::330945867045:role/service-role/Lambda-Runner'
+        var bucketName = 'ai-chatbot';
+		AWS.config.region = 'us-east-2'; // Region
+		AWS.config.credentials = new AWS.CognitoIdentityCredentials({
+		IdentityPoolId: 'us-east-2:26f6321a-2378-4cc6-819f-f0a84f81091f',
+		});
+		var lambda = new AWS.Lambda({region: 'us-east-2', apiVersion: '2015-03-31'});
+		console.log(lambda);
+		
+	
+// create variable to hold data returned by the Lambda function
+		var pullResults;
+	
+		
+
+// create JSON object for parameters for invoking Lambda function
+		
+    $(document).ready(function(){
+        $(".left-first-section").click(function(){
+            $('.main-section').toggleClass("open-more");
+        });
+    });
+    $(document).ready(function(){
+        $(".fa-minus").click(function(){
+            $('.main-section').toggleClass("open-more");
+        });
+    });
+ function updateList() {
+     var string = document.getElementById("usermessage").value;
+	
+     console.log(string);
+     var ul = document.getElementById("chatlist");
+     var li = document.createElement("li");
+     var div = document.createElement("div");
+     var img = document.createElement("img");
+     var p = document.createElement("p");
+     div.className = "right-chat";
+     img.src = "image/1499345471_boy.png";
+     p.innerHTML=string;
+     div.appendChild(img);
+     div.appendChild(p);
+     li.appendChild(div);
+     ul.appendChild(li);
+     document.getElementById("usermessage").value = "";
+	 var lambda = new AWS.Lambda({region: 'us-east-2', apiVersion: '2015-03-31'});
+		console.log(lambda);
+		response(string);
+
+     
+ }
+ function response(string) {
+	 var reqbody = {
+  	"messages": [
+    {
+      "type": "string",
+      "unstructured": {
+        "id": "one",
+        "text": string
+      }
+    }
+  ]
+	}
+
+	$.ajax({
+      url: 'https://6jg5ob6vp4.execute-api.us-east-2.amazonaws.com/v1/chatbot',
+      type: 'POST',
+      headers: {
+      	'Content-Type': 'application/json'
+      },
+      data: JSON.stringify(reqbody),
+      dataType: 'json',
+      success: function(response) {
+      	console.log(response);
+      	//var reply =  response.body.messages[0].unstructured.text;
+        updateIncomingMessage(response);
+      },
+      error: function() {
+        var reply = "Error processing request";
+        updateIncomingMessage(reply);
+ }
+	});
+ }
+
+function updateIncomingMessage(string){
+
+     console.log(string);
+     var ul = document.getElementById("chatlist");
+     var li = document.createElement("li");
+     var div = document.createElement("div");
+     var img = document.createElement("img");
+     var p = document.createElement("p");
+     div.className = "left-chat";
+     img.src = "image/1499345471_boy.png";
+     p.innerHTML=string;
+     div.appendChild(img);
+     div.appendChild(p);
+     li.appendChild(div);
+     ul.appendChild(li);
+     document.getElementById("usermessage").value = "";
+
+}
+function logout() {
+	if (cognitoUser != null) {
+          cognitoUser.signOut();
+        }
+}
+
+</script>
+<div id=  "block">
+<div id="logo">
+<h1 id="hea">
+AI-Chatbot
+</h1>
+</div>
+<div id="ind" onmouseover="moved(this)" onmouseout="mok(this)" ><a href="logo.html">Logout</a></div>
+
+<div id="cat" onmouseover="moved(this)" onmouseout="mok(this)"><a href = "credits.html">Credits</a></div>
+
+<p id="dino"></p>
+</div>
+<script>
+function moved(obj)
+ {
+ 	obj.style.color = '#FFFFFF';
+ 	obj.style.backgroundColor =  '#3B5998';
+ 	obj.style.fontSize = '30px';
+ 	//obj.style.height = '35px';
+ }
+ function mok(obj)
+ {
+ 	obj.style.backgroundColor = '#FFFFFF';
+ 	obj.style.color = '#3B5998';
+ 	obj.style.fontSize = '25px';
+ 	//obj.style.height = '30px';
+ }
+ </script>
+ <div id= "non">
+ <div id="line"></div>
+ <div id = "mat"><p>This is Cloud Assignment 1. Implementation of AI-chatBot</p></div>
+</div>
+
+</body>
+</html>
